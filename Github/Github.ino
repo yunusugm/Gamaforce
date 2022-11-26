@@ -7,6 +7,7 @@
 
 // SIMPAN DATA MENTAH
 float AccRawX1, AccRawY1, AccRawZ1, GyRawX1, GyRawY1, GyRawZ1;
+// KALIBRASI VAR
 float AccRawXc, AccRawYc, AccRawZc, GyRawXc, GyRawYc, GyRawZc;
 
 void setup() {
@@ -76,7 +77,7 @@ void read_mpu6050_gyro() {
 
 void calibrate_mpu6050() {
   Serial.print("calibrating");
- 
+  
   for (int i = 0; i < 2000; i++) {
     read_mpu6050_accel();
     read_mpu6050_gyro();
@@ -89,6 +90,7 @@ void calibrate_mpu6050() {
  
     if (i % 100 == 0) Serial.print(".");
   }
+  // DIRATA-RATA
   AccRawXc /= 2000;
   AccRawYc /= 2000;
   AccRawZc /= 2000;
