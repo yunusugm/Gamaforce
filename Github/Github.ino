@@ -1,4 +1,8 @@
 #include <Wire.h>
+#include <Servo.h>
+
+Servo right_prop;
+Servo left_prop;
 
 // ADDRESS DARI DATASHEET
 #define MPU 0x68
@@ -30,9 +34,12 @@ float pid_p = 0;
 float pid_i = 0;
 float pid_d = 0;
 // PID KONSTANTA
-double kp = 3.4;  //3.55
-double ki = 0.0000000001; //0.003
-double kd = 2.72;     //2.05
+double kp = 3.4;           //3.55
+double ki = 0.0000000001;  //0.003
+double kd = 2.72;          //2.05
+
+double throttleR = 1150;
+double throttleL = 1290;
 
 void setup() {
   // put your setup code here, to run once:
@@ -43,6 +50,16 @@ void setup() {
   Pt_prev = 1;
   mpu6050_setup();
   calibrate_mpu6050();
+  time = millis();
+
+  left_prop.attach(10);
+  right_prop.attach(3);
+  left_prop.writeMicroseconds(2000);
+  right_prop.writeMicroseconds(2000);
+  delay(2000);
+  left_prop.writeMicroseconds(1000);
+  right_prop.writeMicroseconds(1000);
+  delay(2000);
 }
 
 void loop() {
@@ -61,7 +78,7 @@ void loop() {
     pid_i = pid_i + (ki * error);
   }
   pid_d = kd * ((error - previous_error) / elapsedTimes);
-  
+
   // OUTPUT KE PLANT
   PID = pid_p + pid_i + pid_d;
   // PEMBATASAN PID
@@ -71,6 +88,39 @@ void loop() {
   if (PID > 1000) {
     PID = 1000;
   }
+
+  pwmLeft = throttleL + PID;
+  pwmRight = throttleR - PID;
+
+  if (pwmRight < 1150) {
+
+    pwmRight = 1150;
+  }
+  if (pwmRight > 1475) {
+    pwmRight = 1475;
+  }
+  if (pwmLeft < 1290) {
+    pwmLeft = 1290;
+  }
+  if (pwmLeft > 1500) {
+    pwmLeft = 1500;
+  }
+
+  left_prop.writeMicroseconds(pwmLeft);
+  right_prop.writeMicroseconds(pwmRight);
+  previous_error = error;
+
+  Serial.print(" \terror : ");
+  Serial.print(error);
+  Serial.print(" \tkalmanP : ");
+  Serial.print(kalmanP);
+  Serial.print(" \tPWM RIGHT : ");
+  Serial.print(pwmRight);
+  Serial.print(" \tPWM LEFT : ");
+  Serial.print(pwmLeft);
+  Serial.print(" \tPID : ");
+  Serial.print(PID);
+  Serial.println(" ");
 }
 
 void mpu6050_setup() {
