@@ -1,8 +1,11 @@
 #include <Wire.h>
 
+// ADDRESS DARI DATASHEET
 #define MPU 0x68
 #define ACCEL 0x3B
 #define GYRO 0x43
+
+// SIMPAN DATA MENTAH
 float AccRawX1, AccRawY1, AccRawZ1, GyRawX1, GyRawY1, GyRawZ1;
 
 void setup() {
@@ -51,7 +54,9 @@ void read_mpu6050_accel() {
   Wire.beginTransmission(MPU);
   Wire.write(ACCEL);
   Wire.endTransmission();
+  // MULAI BACA 6 BYTES
   Wire.requestFrom(MPU, 6);
+  // SIMPAN SETIAP PEMBACAAN 8 BIT MSB DAN LSB
   AccRawX1 = Wire.read() << 8 | Wire.read(); 
   AccRawY1 = Wire.read() << 8 | Wire.read();  
   AccRawZ1 = Wire.read() << 8 | Wire.read();  
