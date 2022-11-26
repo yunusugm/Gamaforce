@@ -14,7 +14,7 @@ float AccRawX2, AccRawY2, AccRawZ2, GyRawX2, GyRawY2, GyRawZ2;
 float AccAngleX, AccAngleY, AccAngleZ, GyAngleX, GyAngleY, GyAngleZ;
 float roll, pitch;
 float mpuTimer, mpuDTime;
-
+// KALMAN
 float kalmanR;
 float kalmanP;
 float Xt, Xt_update, Xt_prev;
@@ -160,8 +160,10 @@ void calculate_angle() {
 }
 
 float kalman_filter(float data) {
+  //Predict
   Xt_update = Xt_prev;
   Pt_update = Pt_prev + Q;
+  //Update
   Kt = Pt_update / (Pt_update + R);
   Xt = Xt_update + (Kt * (data - Xt_update));\
   Pt = (1 - Kt) * Pt_update;
