@@ -24,12 +24,12 @@ float R, Q;
 
 float elapsedTimes, time, timePrev;
 float desired_angle = 0;
-
+// PID
 float PID, pwmLeft, pwmRight, error, previous_error;
 float pid_p = 0;
 float pid_i = 0;
 float pid_d = 0;
-
+// PID KONSTANTA
 double kp = 3.4;  //3.55
 double ki = 0.0000000001; //0.003
 double kd = 2.72;     //2.05
@@ -53,17 +53,18 @@ void loop() {
   timePrev = time;
   time = millis();
   elapsedTimes = (time - timePrev) / 1000;
-
+  // CARI ERROR SETPOINT - MEASUREMENT
   error = desired_angle - kalmanP;
+  // KP KI KD
   pid_p = kp * error;
-
   if (-3 < error < 3) {
     pid_i = pid_i + (ki * error);
   }
-
   pid_d = kd * ((error - previous_error) / elapsedTimes);
-
+  
+  // OUTPUT KE PLANT
   PID = pid_p + pid_i + pid_d;
+  // PEMBATASAN PID
   if (PID < -1000) {
     PID = -1000;
   }
