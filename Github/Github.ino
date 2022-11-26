@@ -7,10 +7,12 @@
 
 // SIMPAN DATA MENTAH
 float AccRawX1, AccRawY1, AccRawZ1, GyRawX1, GyRawY1, GyRawZ1;
+float AccRawXc, AccRawYc, AccRawZc, GyRawXc, GyRawYc, GyRawZc;
 
 void setup() {
   // put your setup code here, to run once:
   mpu6050_setup();
+  calibrate_mpu6050();
 }
 
 void loop() {
@@ -70,4 +72,30 @@ void read_mpu6050_gyro() {
   GyRawX1 = Wire.read() << 8 | Wire.read();
   GyRawY1 = Wire.read() << 8 | Wire.read();
   GyRawZ1 = Wire.read() << 8 | Wire.read();
+}
+
+void calibrate_mpu6050() {
+  Serial.print("calibrating");
+ 
+  for (int i = 0; i < 2000; i++) {
+    read_mpu6050_accel();
+    read_mpu6050_gyro();
+    AccRawXc += AccRawX1;
+    AccRawYc += AccRawY1;
+    AccRawZc += AccRawZ1;
+    GyRawXc += GyRawX1;
+    GyRawYc += GyRawY1;
+    GyRawZc += GyRawZ1;
+ 
+    if (i % 100 == 0) Serial.print(".");
+  }
+  AccRawXc /= 2000;
+  AccRawYc /= 2000;
+  AccRawZc /= 2000;
+  GyRawXc /= 2000;
+  GyRawYc /= 2000;
+  GyRawZc /= 2000;
+  Serial.println(AccRawXc);
+  Serial.println(AccRawYc);
+  Serial.println(AccRawZc);
 }
