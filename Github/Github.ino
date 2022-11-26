@@ -15,14 +15,28 @@ float AccAngleX, AccAngleY, AccAngleZ, GyAngleX, GyAngleY, GyAngleZ;
 float roll, pitch;
 float mpuTimer, mpuDTime;
 
+float kalmanR;
+float kalmanP;
+float Xt, Xt_update, Xt_prev;
+float Pt, Pt_update, Pt_prev;
+float Kt;
+float R, Q;
+
 void setup() {
   // put your setup code here, to run once:
+  Wire.begin();
+  Serial.begin(115200);
+  R = 10;
+  Q = 0.1;
+  Pt_prev = 1;
   mpu6050_setup();
   calibrate_mpu6050();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  calculate_angle();
+  kalmanP = kalman_filter(pitch);
 }
 
 void mpu6050_setup() {
@@ -143,4 +157,17 @@ void calculate_angle() {
   // COMPLEMENT FILTER
   roll = 0.9998 * AccAngleX + 0.0002 * GyAngleX;
   pitch = 0.9998 * AccAngleY + 0.0002 * GyAngleY;
+}
+
+float kalman_filter(float data) {
+  Xt_update = Xt_prev;
+  Pt_update = Pt_prev + Q;
+  Kt = Pt_update / (Pt_update + R);
+  Xt = Xt_update + (Kt * (data - Xt_update));\
+  Pt = (1 - Kt) * Pt_update;
+ 
+  Xt_prev = Xt;
+  Pt_prev = Pt;
+ 
+  return Xt;
 }
