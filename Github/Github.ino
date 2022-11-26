@@ -1,3 +1,10 @@
+#include <Wire.h>
+
+#define MPU 0x68
+#define ACCEL 0x3B
+#define GYRO 0x43
+float AccRawX1, AccRawY1, AccRawZ1, GyRawX1, GyRawY1, GyRawZ1;
+
 void setup() {
   // put your setup code here, to run once:
   mpu6050_setup();
