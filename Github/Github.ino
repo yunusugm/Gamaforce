@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <Servo.h>
 
+// Extract
 Servo right_prop;
 Servo left_prop;
 
@@ -37,7 +38,7 @@ float pid_d = 0;
 double kp = 3.4;           //3.55
 double ki = 0.0000000001;  //0.003
 double kd = 2.72;          //2.05
-
+// INITAL VALUE
 double throttleR = 1150;
 double throttleL = 1290;
 
@@ -88,12 +89,11 @@ void loop() {
   if (PID > 1000) {
     PID = 1000;
   }
-
+  // OUTPUT
   pwmLeft = throttleL + PID;
   pwmRight = throttleR - PID;
-
+  // BATAS ATAS BAWAH OUTPUT
   if (pwmRight < 1150) {
-
     pwmRight = 1150;
   }
   if (pwmRight > 1475) {
@@ -105,11 +105,11 @@ void loop() {
   if (pwmLeft > 1500) {
     pwmLeft = 1500;
   }
-
+  // PUTAR PROPELER
   left_prop.writeMicroseconds(pwmLeft);
   right_prop.writeMicroseconds(pwmRight);
   previous_error = error;
-
+  //DEBUG
   Serial.print(" \terror : ");
   Serial.print(error);
   Serial.print(" \tkalmanP : ");
