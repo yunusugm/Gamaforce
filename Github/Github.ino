@@ -9,6 +9,10 @@
 float AccRawX1, AccRawY1, AccRawZ1, GyRawX1, GyRawY1, GyRawZ1;
 // KALIBRASI VAR
 float AccRawXc, AccRawYc, AccRawZc, GyRawXc, GyRawYc, GyRawZc;
+float AccRawX2, AccRawY2, AccRawZ2, GyRawX2, GyRawY2, GyRawZ2;
+float AccAngleX, AccAngleY, AccAngleZ, GyAngleX, GyAngleY, GyAngleZ;
+float roll, pitch;
+float mpuTimer, mpuDTime;
 
 void setup() {
   // put your setup code here, to run once:
@@ -60,9 +64,9 @@ void read_mpu6050_accel() {
   // MULAI BACA 6 BYTES
   Wire.requestFrom(MPU, 6);
   // SIMPAN SETIAP PEMBACAAN 8 BIT MSB DAN LSB
-  AccRawX1 = Wire.read() << 8 | Wire.read(); 
-  AccRawY1 = Wire.read() << 8 | Wire.read();  
-  AccRawZ1 = Wire.read() << 8 | Wire.read();  
+  AccRawX1 = Wire.read() << 8 | Wire.read();
+  AccRawY1 = Wire.read() << 8 | Wire.read();
+  AccRawZ1 = Wire.read() << 8 | Wire.read();
 }
 
 void read_mpu6050_gyro() {
@@ -77,7 +81,7 @@ void read_mpu6050_gyro() {
 
 void calibrate_mpu6050() {
   Serial.print("calibrating");
-  
+
   for (int i = 0; i < 2000; i++) {
     read_mpu6050_accel();
     read_mpu6050_gyro();
@@ -87,7 +91,7 @@ void calibrate_mpu6050() {
     GyRawXc += GyRawX1;
     GyRawYc += GyRawY1;
     GyRawZc += GyRawZ1;
- 
+
     if (i % 100 == 0) Serial.print(".");
   }
   // DIRATA-RATA
@@ -100,4 +104,38 @@ void calibrate_mpu6050() {
   Serial.println(AccRawXc);
   Serial.println(AccRawYc);
   Serial.println(AccRawZc);
+}
+
+void calculate_angle() {
+  read_mpu6050_accel();
+
+  AccRawX2 = (AccRawX1 + (-1 * AccRawXc)) / 8192.0;
+  AccRawY2 = (AccRawY1 + (-1 * AccRawYc)) / 8192.0;
+  AccRawZ2 = (AccRawZ1 + (8192 - AccRawZc)) / 8192.0;
+  // AccRawX2 = (AccRawX1 + (-1 * AccRawXc)) / 16384.0;
+  // AccRawY2 = (AccRawY1 + (-1 * AccRawYc)) / 16384.0;
+  // AccRawZ2 = (AccRawZ1 + (16384 - AccRawZc)) / 16384.0;
+
+
+  AccAngleX = (atan2(AccRawX2, AccRawZ2)) * 57.2957795;
+  AccAngleY = (atan2(AccRawY2, AccRawZ2)) * 57.2957795;
+
+  for (int i = 0; i < 250; i++) {
+    mpuDTime = (millis() - mpuTimer) / 1000;
+    read_mpu6050_gyro();
+
+    GyRawX2 = GyRawX1 / 65.5;
+    GyRawY2 = GyRawY1 / 65.5;
+    // GyRawX2 = GyRawX1 / 131.0;
+    // GyRawY2 = GyRawY1 / 131.0;
+    // GyRawZ2 = (GyRawZ1 + (-1 * GyRawXc)) / 65.5;
+
+    GyAngleX += GyRawX2 * mpuDTime;
+    GyAngleY += GyRawY2 * mpuDTime;
+  }
+  GyAngleX = (GyAngleX + (-1 * GyRawXc)) / 250;
+  GyAngleY = (GyAngleY + (-1 * GyRawYc)) / 250;
+
+  roll = 0.9998 * AccAngleX + 0.0002 * GyAngleX;
+  pitch = 0.9998 * AccAngleY + 0.0002 * GyAngleY;
 }
