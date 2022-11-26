@@ -22,6 +22,18 @@ float Pt, Pt_update, Pt_prev;
 float Kt;
 float R, Q;
 
+float elapsedTimes, time, timePrev;
+float desired_angle = 0;
+
+float PID, pwmLeft, pwmRight, error, previous_error;
+float pid_p = 0;
+float pid_i = 0;
+float pid_d = 0;
+
+double kp = 3.4;  //3.55
+double ki = 0.0000000001; //0.003
+double kd = 2.72;     //2.05
+
 void setup() {
   // put your setup code here, to run once:
   Wire.begin();
@@ -37,6 +49,27 @@ void loop() {
   // put your main code here, to run repeatedly:
   calculate_angle();
   kalmanP = kalman_filter(pitch);
+
+  timePrev = time;
+  time = millis();
+  elapsedTimes = (time - timePrev) / 1000;
+
+  error = desired_angle - kalmanP;
+  pid_p = kp * error;
+
+  if (-3 < error < 3) {
+    pid_i = pid_i + (ki * error);
+  }
+
+  pid_d = kd * ((error - previous_error) / elapsedTimes);
+
+  PID = pid_p + pid_i + pid_d;
+  if (PID < -1000) {
+    PID = -1000;
+  }
+  if (PID > 1000) {
+    PID = 1000;
+  }
 }
 
 void mpu6050_setup() {
@@ -139,7 +172,7 @@ void calculate_angle() {
   for (int i = 0; i < 250; i++) {
     mpuDTime = (millis() - mpuTimer) / 1000;
     read_mpu6050_gyro();
-    
+
     // HASIL KALIBRASI DIBAGI LSB
     GyRawX2 = GyRawX1 / 65.5;
     GyRawY2 = GyRawY1 / 65.5;
@@ -165,11 +198,11 @@ float kalman_filter(float data) {
   Pt_update = Pt_prev + Q;
   //Update
   Kt = Pt_update / (Pt_update + R);
-  Xt = Xt_update + (Kt * (data - Xt_update));\
+  Xt = Xt_update + (Kt * (data - Xt_update));
   Pt = (1 - Kt) * Pt_update;
- 
+
   Xt_prev = Xt;
   Pt_prev = Pt;
- 
+
   return Xt;
 }
