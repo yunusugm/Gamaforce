@@ -5,7 +5,6 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
 }
 
 void mpu6050_setup() {
@@ -39,4 +38,24 @@ void mpu6050_setup() {
   Wire.write(0x1B);
   Wire.write(0x00);
   Wire.endTransmission();
+}
+
+void read_mpu6050_accel() {
+  Wire.beginTransmission(MPU);
+  Wire.write(ACCEL);
+  Wire.endTransmission();
+  Wire.requestFrom(MPU, 6);
+  AccRawX1 = Wire.read() << 8 | Wire.read(); 
+  AccRawY1 = Wire.read() << 8 | Wire.read();  
+  AccRawZ1 = Wire.read() << 8 | Wire.read();  
+}
+
+void read_mpu6050_gyro() {
+  Wire.beginTransmission(MPU);
+  Wire.write(GYRO);
+  Wire.endTransmission();
+  Wire.requestFrom(MPU, 6);
+  GyRawX1 = Wire.read() << 8 | Wire.read();
+  GyRawY1 = Wire.read() << 8 | Wire.read();
+  GyRawZ1 = Wire.read() << 8 | Wire.read();
 }
